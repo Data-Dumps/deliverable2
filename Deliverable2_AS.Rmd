@@ -1,0 +1,108 @@
+---
+title: "Deliverable2_AS"
+output: html_notebook
+---
+
+```{r}
+# Uploading dataset and packages
+link="https://github.com/Data-Dumps/deliverable2/raw/main/dinodata_cleaned.xlsx"
+dinodata_cleaned=import(link)
+
+# Contingency table
+(LocationDiet=table(dinodata_cleaned$diet,dinodata_cleaned$lived_in))
+```
+
+```{r}
+# Computing column percent from contingency table
+library(magrittr)
+(LocationDiet_mgCol=100*prop.table(LocationDiet,
+                            margin = 2)
+                             %>%round(.,3))
+```
+```{r}
+# Making a data frame from contingency table
+(LocationDietDF=as.data.frame(LocationDiet))
+
+# Adding last column to data fram of counts
+LocationDietDF$share=as.data.frame(LocationDiet_mgCol)[,3]
+
+#as.data.frame(LocationDiet_mgCol)
+# Changing names on data fram
+names(LocationDietDF)[1:4]=c("Country","Diet","Count","Share")
+
+LocationDietDF
+```
+
+```{r}
+# Creating stacked bar graph
+library(ggplot2)
+base1=ggplot(data=LocationDietDF, 
+             aes(x=reorder(Diet,Share,median),
+                 y=Share,
+                 fill=Country))
+
+barStacked = base1 + geom_bar(stat = "identity",
+                              position = 'stack')+theme(axis.text.x = element_text(angle = 90))
+barStacked 
+```
+
+```{r}
+library(scales)
+#annotating
+barStackedAnn= barStacked + geom_text(size = 2,
+                             position = position_stack(vjust = 0.5),
+                             aes(label=percent(Share,accuracy = 0.1)))
+
+barStackedAnn = barStackedAnn + scale_y_continuous(labels = percent)
+
+barStackedAnn
+```
+```{r}
+# base with only X and Y in 'aes()'
+baseBar = ggplot(LocationDietDF, aes(x = Country, y = Share ) ) 
+
+# the bars
+barPlot  = baseBar + geom_bar( stat = "identity" )+theme(axis.text.x = element_text(angle = 90))
+
+barPlot
+```
+
+```{r}
+# bar per country with 'facet'
+barsFt = barPlot + facet_grid(~ Diet)+theme(axis.text.x = element_text(angle = 90))
+barsFt
+```
+
+```{r}
+barsFt + coord_flip()
+```
+```{r}
+# new base
+baseRE  = ggplot(LocationDietDF, 
+                 aes(x = reorder(Country, Share),
+                     y = Share ) ) + theme_minimal()
+
+barPlotRE = baseRE + geom_bar( stat = "identity" ) 
+barFtRE = barPlotRE + facet_grid( ~ Diet) 
+barFtRE= barFtRE + coord_flip() 
+
+
+barFtRE
+```
+
+```{r}
+barFtRE=barFtRE + theme(axis.text.y = element_text(size=7,angle = 20)) 
+barFtRE
+```
+
+```{r}
+barREann= barFtRE+ geom_text(aes(label=round(Share,2)),
+                             nudge_y = 0.1)
+barREann
+```
+
+```{r}
+barCond=barFtRE + geom_text(aes(label=ifelse(share>0.05,# condition to annotate
+                                      round(Share,2),"")),
+                     nudge_y = 0.1)
+barCond
