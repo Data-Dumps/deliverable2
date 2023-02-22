@@ -1,5 +1,5 @@
 ---
-title: "Deliverable2_AS"
+title: "Deliverable2_Final"
 output: html_notebook
 ---
 
@@ -34,7 +34,7 @@ LocationDietDF$share=as.data.frame(LocationDiet_mgCol)[,3]
 # Changing names on data fram
 names(LocationDietDF)[1:4]=c("Diet","Country","Count","Share")
 
-#LocationDietDF
+LocationDietDF
 ```
 
 ```{r}
@@ -47,9 +47,7 @@ base1=ggplot(data=LocationDietDF,
 
 barStacked = base1 + geom_bar(stat = "identity",
                               position = 'stack')+theme(axis.text.x = element_text(angle = 90))
-barStacked
-```
-```{r}
+
 titleText='What diets did the dinosaurs have in each country?'
 sourceText='Source: National History Museum'
 
@@ -59,17 +57,13 @@ barStacked = base1 + geom_bar(stat = "identity",
 barStacked
 ```
 ```{r}
-#levels(LocationDietDF$Diet)
+# Re-ordering columns
 
 LocationDietDF$Diet=factor(LocationDietDF$Diet,
        levels=c("carnivorous","omnivorous" ,"herbivorous"),
        ordered = T)
 
-
-```
-
-```{r}
-# Creating stacked bar graph
+# Flipping axes and adding subtitle
 library(ggplot2)
 base1=ggplot(data=LocationDietDF, 
              aes(x=reorder(Country,Share,median),
@@ -79,10 +73,14 @@ base1=ggplot(data=LocationDietDF,
 barStacked = base1 + geom_bar(stat = "identity")+theme(axis.text.x = element_text(angle = 90))
 
 titleText='What diets did the dinosaurs have in each country?'
+subtitleText='Eleven countries had only herbivorous dinosaurs, while three countries had only carnivorous dinosaurs.'
 sourceText='Source: National History Museum'
 
 barStacked = base1 + geom_bar(stat = "identity",
                               position = 'stack')+theme(axis.text.x = element_text(angle = 90)) + labs(title=titleText,
-                                                                                                       caption = sourceText) 
+                                                                                                       subtitle=subtitleText,
+                                                                                                       caption = sourceText)
+# Final results
 barStacked  + coord_flip()
 ```
+
