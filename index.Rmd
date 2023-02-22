@@ -1,0 +1,86 @@
+---
+title: "Deliverable2_Final"
+output: html_notebook
+---
+
+```{r}
+# Uploading dataset and packages
+link="https://github.com/Data-Dumps/deliverable2/raw/main/dinodata_cleaned.xlsx"
+library(rio)
+dinodata_cleaned=import(link)
+
+dinodata_cleaned[dinodata_cleaned$diet=='herbivorous/omnivorous','diet']='omnivorous'
+dinodata_cleaned=dinodata_cleaned[dinodata_cleaned$diet!='unknown',]
+
+# Contingency table
+(LocationDiet=table(dinodata_cleaned$diet,dinodata_cleaned$lived_in))
+```
+
+```{r}
+# Computing column percent from contingency table
+library(magrittr)
+(LocationDiet_mgCol=100*prop.table(LocationDiet,
+                            margin = 2)
+                             %>%round(.,3))
+```
+```{r}
+# Making a data frame from contingency table
+(LocationDietDF=as.data.frame(LocationDiet))
+
+# Adding last column to data fram of counts
+LocationDietDF$share=as.data.frame(LocationDiet_mgCol)[,3]
+
+#as.data.frame(LocationDiet_mgCol)
+# Changing names on data fram
+names(LocationDietDF)[1:4]=c("Diet","Country","Count","Share")
+
+LocationDietDF
+```
+
+```{r}
+# Creating stacked bar graph
+library(ggplot2)
+base1=ggplot(data=LocationDietDF, 
+             aes(x=reorder(Country,Share,median),
+                 y=Share,
+                 fill=Diet))+labs(y= "Share", x = "Country") + guides(fill = guide_legend(title = "Diet"))
+
+barStacked = base1 + geom_bar(stat = "identity",
+                              position = 'stack')+theme(axis.text.x = element_text(angle = 90))
+
+titleText='What diets did the dinosaurs have in each country?'
+sourceText='Source: National History Museum'
+
+barStacked = base1 + geom_bar(stat = "identity",
+                              position = 'stack')+theme(axis.text.x = element_text(angle = 90)) + labs(title=titleText,
+                                                                                                       caption = sourceText) 
+barStacked
+```
+```{r}
+# Re-ordering columns
+
+LocationDietDF$Diet=factor(LocationDietDF$Diet,
+       levels=c("carnivorous","omnivorous" ,"herbivorous"),
+       ordered = T)
+
+# Flipping axes and adding subtitle
+library(ggplot2)
+base1=ggplot(data=LocationDietDF, 
+             aes(x=reorder(Country,Share,median),
+                 y=Share,
+                 fill=Diet))+labs(y= "Share", x = "Country") + guides(fill = guide_legend(title = "Diet"))
+
+barStacked = base1 + geom_bar(stat = "identity")+theme(axis.text.x = element_text(angle = 90))
+
+titleText='What diets did the dinosaurs have in each country?'
+subtitleText='Eleven countries had only herbivorous dinosaurs, while three countries had only carnivorous dinosaurs.'
+sourceText='Source: National History Museum'
+
+barStacked = base1 + geom_bar(stat = "identity",
+                              position = 'stack')+theme(axis.text.x = element_text(angle = 90)) + labs(title=titleText,
+                                                                                                       subtitle=subtitleText,
+                                                                                                       caption = sourceText)
+# Final results
+barStacked  + coord_flip()
+```
+
